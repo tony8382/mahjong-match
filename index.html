@@ -3,33 +3,51 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>麻將對對碰</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>麻將對對碰 - 長輩友善版</title>
+    <!-- 引入 Noto Sans TC 用於標題與 UI，Ma Shan Zheng 增加藝術感 -->
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
+        :root {
+            --font-main: 'Noto Sans TC', sans-serif;
+            --font-art: 'Ma Shan Zheng', cursive;
+        }
         body {
-            background-color: #1a472a; /* Classic Mahjong green */
+            background-color: #064e3b; /* 深翠綠色底色 */
             margin: 0;
-            overflow-x: hidden;
-            font-family: 'Microsoft JhengHei', 'PingFang TC', sans-serif;
-            /* 移除點擊時的灰色高亮陰影 */
+            padding: 0;
+            overflow: hidden; /* 防止全域滾動，由 App 控制內容 */
+            font-family: var(--font-main);
             -webkit-tap-highlight-color: transparent;
+            user-select: none;
         }
         .mahjong-bg {
-            background-image: radial-gradient(circle, #2d5a3c 1px, transparent 1px);
-            background-size: 30px 30px;
+            background-image: radial-gradient(circle, #065f46 1px, transparent 1px);
+            background-size: 40px 40px;
+            background-color: #064e3b;
+            min-height: 100vh;
         }
-        /* 優化重繪效能 */
+        /* 優化文字渲染 */
         * {
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            box-sizing: border-box;
         }
     </style>
-
+<script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.37.0"
+  }
+}
+</script>
 </head>
 <body class="mahjong-bg">
     <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>
 </body>
 </html>
