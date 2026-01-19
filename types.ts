@@ -34,6 +34,7 @@ export interface GameState {
   difficulty: Difficulty;
 }
 
+// Added Encouragement interface to resolve import error in geminiService.ts
 export interface Encouragement {
   message: string;
   author: string;

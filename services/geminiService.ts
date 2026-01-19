@@ -2,9 +2,11 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Encouragement } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
-
+// Helper function to get encouragement from Gemini
 export const getElderlyEncouragement = async (): Promise<Encouragement> => {
+  // Always initialize GoogleGenAI with a named parameter using process.env.API_KEY
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+
   try {
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
@@ -22,7 +24,9 @@ export const getElderlyEncouragement = async (): Promise<Encouragement> => {
       }
     });
 
-    const data = JSON.parse(response.text);
+    // Use response.text directly (it is a getter)
+    const text = response.text;
+    const data = JSON.parse(text || '{}');
     return data;
   } catch (error) {
     console.error("Gemini Error:", error);

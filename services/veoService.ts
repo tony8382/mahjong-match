@@ -19,7 +19,8 @@ export const generateVeoVideo = async (
   prompt: string,
   aspectRatio: '16:9' | '9:16' = '16:9'
 ): Promise<string> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+  // Create a new GoogleGenAI instance right before making an API call to ensure it uses the most up-to-date API key.
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   
   try {
     let operation = await ai.models.generateVideos({
@@ -37,13 +38,15 @@ export const generateVeoVideo = async (
     });
 
     while (!operation.done) {
-      await new Promise(resolve => setTimeout(resolve, 5000));
+      // Polling for video generation should use a 10s interval as per guidelines
+      await new Promise(resolve => setTimeout(resolve, 10000));
       operation = await ai.operations.getVideosOperation({ operation: operation });
     }
 
     const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
     if (!downloadLink) throw new Error("Video generation failed: No URI returned");
 
+    // The response.body contains the MP4 bytes. You must append an API key when fetching from the download link.
     const videoResponse = await fetch(`${downloadLink}&key=${process.env.API_KEY}`);
     const videoBlob = await videoResponse.blob();
     return URL.createObjectURL(videoBlob);

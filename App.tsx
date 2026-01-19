@@ -1,8 +1,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { GameState, MahjongTile, Encouragement, Difficulty } from './types';
+import { GameState, MahjongTile, Difficulty } from './types';
 import { createGame, isTileBlocked, findHint, shuffleTilesSolvable } from './utils/gameLogic';
-import { getElderlyEncouragement } from './services/geminiService';
 import { audioService } from './services/audioService';
 import { LAYOUT_PATTERNS } from './constants';
 import Tile from './components/Tile';
@@ -19,7 +18,6 @@ const App: React.FC = () => {
     difficulty: 'STANDARD'
   });
   const [hintIds, setHintIds] = useState<string[]>([]);
-  const [encouragement, setEncouragement] = useState<Encouragement | null>(null);
   const [isMuted, setIsMuted] = useState(false);
   const [showRules, setShowRules] = useState(false);
 
@@ -37,7 +35,6 @@ const App: React.FC = () => {
         difficulty
       });
       setHintIds([]);
-      getElderlyEncouragement().then(setEncouragement);
     }, 400);
   }, []);
 
@@ -65,7 +62,7 @@ const App: React.FC = () => {
             }));
             audioService.playMatch();
             audioService.playWin();
-          }, 1000); // 稍微長一點，配合翻轉動畫
+          }, 1200); 
           return;
         }
       }
@@ -151,7 +148,6 @@ const App: React.FC = () => {
             </div>
             <div>
               <h1 className="text-3xl sm:text-5xl font-black tracking-tighter">麻將對對碰</h1>
-              {/* 移除副標題 */}
             </div>
           </div>
 
