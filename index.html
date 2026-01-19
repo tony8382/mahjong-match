@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>長青麻將對對碰</title>
+    <title>麻將對對碰</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -13,10 +13,17 @@
             margin: 0;
             overflow-x: hidden;
             font-family: 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            /* 移除點擊時的灰色高亮陰影 */
+            -webkit-tap-highlight-color: transparent;
         }
         .mahjong-bg {
             background-image: radial-gradient(circle, #2d5a3c 1px, transparent 1px);
             background-size: 30px 30px;
+        }
+        /* 優化重繪效能 */
+        * {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
     </style>
 <script type="importmap">

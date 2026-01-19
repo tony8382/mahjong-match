@@ -42,14 +42,12 @@ const App: React.FC = () => {
     if (gameState.status === 'playing') {
       const activeTiles = gameState.tiles.filter(t => !t.isMatched);
       
-      // 基本獲勝判定
       if (gameState.tiles.length > 0 && activeTiles.length === 0) {
         setGameState(prev => ({ ...prev, status: 'won' }));
         audioService.playWin();
         return;
       }
 
-      // 特殊規則：如果最後兩張相同，即便疊在一起也自動判定獲勝
       if (activeTiles.length === 2) {
         const [t1, t2] = activeTiles;
         if (t1.type === t2.type && t1.value === t2.value) {
@@ -137,13 +135,14 @@ const App: React.FC = () => {
   const currentLayout = LAYOUT_PATTERNS[gameState.difficulty];
 
   return (
-    <div className="min-h-screen flex flex-col items-center p-2 sm:p-4 bg-emerald-950/10">
+    <div className="min-h-screen flex flex-col items-center p-2 sm:p-4 bg-emerald-950/20">
       {showRules && <RulesModal onClose={() => setShowRules(false)} />}
 
-      <header className="w-full max-w-4xl bg-white/20 backdrop-blur-xl rounded-[2rem] p-4 sm:p-6 mb-4 sm:mb-8 text-white shadow-2xl border border-white/20">
+      {/* 修改後的 Header：移除 shadow-2xl 以穩定渲染 */}
+      <header className="w-full max-w-4xl bg-emerald-900/90 rounded-[2rem] p-4 sm:p-6 mb-4 sm:mb-8 text-white border-b-4 border-emerald-800 shadow-xl">
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-4">
-            <div className="bg-yellow-500 p-2 sm:p-3 rounded-2xl shadow-xl">
+            <div className="bg-yellow-500 p-2 sm:p-3 rounded-2xl shadow-lg">
               <i className="fas fa-chess-board text-2xl sm:text-3xl text-white"></i>
             </div>
             <div>
@@ -152,10 +151,10 @@ const App: React.FC = () => {
           </div>
 
           <div className="flex gap-2 sm:gap-3">
-            <button onClick={() => setShowRules(true)} className="bg-white/10 hover:bg-white/30 p-2 rounded-2xl w-14 h-14 flex items-center justify-center transition-all border border-white/10 active:scale-90 shadow-lg">
+            <button onClick={() => setShowRules(true)} className="bg-white/10 hover:bg-white/20 p-2 rounded-2xl w-14 h-14 flex items-center justify-center transition-all border border-white/10 active:scale-95">
               <i className="fas fa-question text-2xl"></i>
             </button>
-            <button onClick={() => { audioService.toggleMute(); setIsMuted(!isMuted); }} className="bg-white/10 hover:bg-white/30 p-2 rounded-2xl w-14 h-14 flex items-center justify-center transition-all border border-white/10 active:scale-90 shadow-lg">
+            <button onClick={() => { audioService.toggleMute(); setIsMuted(!isMuted); }} className="bg-white/10 hover:bg-white/20 p-2 rounded-2xl w-14 h-14 flex items-center justify-center transition-all border border-white/10 active:scale-95">
               <i className={`fas ${isMuted ? 'fa-volume-mute' : 'fa-volume-up'} text-2xl`}></i>
             </button>
           </div>
@@ -163,11 +162,12 @@ const App: React.FC = () => {
 
         {gameState.status !== 'selecting' && gameState.status !== 'loading' && (
           <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/10">
-            <div className="bg-black/30 rounded-3xl p-3 sm:p-4 text-center border border-white/10">
+            {/* 改為更穩定的深色實心背景，避免陰影閃爍 */}
+            <div className="bg-black/40 rounded-3xl p-3 sm:p-4 text-center border-b-4 border-black/20">
               <p className="text-sm font-bold text-yellow-500 mb-1">得分</p>
               <p className="text-3xl sm:text-5xl font-mono font-black text-white">{gameState.score}</p>
             </div>
-            <div className="bg-black/30 rounded-3xl p-3 sm:p-4 text-center border border-white/10">
+            <div className="bg-black/40 rounded-3xl p-3 sm:p-4 text-center border-b-4 border-black/20">
               <p className="text-sm font-bold text-green-400 mb-1">剩餘</p>
               <p className="text-3xl sm:text-5xl font-mono font-black text-white">
                 {gameState.tiles.filter(t => !t.isMatched).length}
@@ -195,7 +195,7 @@ const App: React.FC = () => {
           </div>
         ) : gameState.status === 'loading' ? (
           <div className="text-center">
-             <div className="inline-block w-24 h-24 border-[12px] border-yellow-500 border-t-transparent rounded-full animate-spin mb-10 shadow-2xl"></div>
+             <div className="inline-block w-24 h-24 border-[12px] border-yellow-500 border-t-transparent rounded-full animate-spin mb-10"></div>
              <p className="text-white text-3xl font-black animate-pulse">正在精選牌組...</p>
           </div>
         ) : gameState.status === 'won' ? (
