@@ -12,28 +12,26 @@ export interface TileDef {
   type: TileType;
   value: number | string;
   label: string;
-  symbol: string;
   color: string;
 }
 
-// 增加 \uFE0E (Variation Selector-15) 以防止 iOS/Android 將 Unicode 麻將轉為 Emoji
 export const TILE_DEFINITIONS: TileDef[] = [
   ...[1, 2, 3, 4, 5, 6, 7, 8, 9].map(v => ({ 
-    type: TileType.CHAR, value: v, label: `${v}萬`, symbol: String.fromCodePoint(0x1F007 + v - 1) + '\uFE0E', color: 'text-red-600' 
+    type: TileType.CHAR, value: v, label: `${v}萬`, color: 'text-gray-900' 
   })),
   ...[1, 2, 3, 4, 5, 6, 7, 8, 9].map(v => ({ 
-    type: TileType.DOT, value: v, label: `${v}筒`, symbol: String.fromCodePoint(0x1F019 + v - 1) + '\uFE0E', color: 'text-blue-700' 
+    type: TileType.DOT, value: v, label: `${v}筒`, color: 'text-gray-900' 
   })),
   ...[1, 2, 3, 4, 5, 6, 7, 8, 9].map(v => ({ 
-    type: TileType.BAMBOO, value: v, label: `${v}條`, symbol: String.fromCodePoint(0x1F010 + v - 1) + '\uFE0E', color: 'text-green-700' 
+    type: TileType.BAMBOO, value: v, label: `${v}條`, color: 'text-gray-900' 
   })),
-  { type: TileType.WIND, value: 'E', label: '東', symbol: '🀀\uFE0E', color: 'text-gray-900' },
-  { type: TileType.WIND, value: 'S', label: '南', symbol: '🀁\uFE0E', color: 'text-gray-900' },
-  { type: TileType.WIND, value: 'W', label: '西', symbol: '🀂\uFE0E', color: 'text-gray-900' },
-  { type: TileType.WIND, value: 'N', label: '北', symbol: '🀃\uFE0E', color: 'text-gray-900' },
-  { type: TileType.DRAGON, value: 'C', label: '中', symbol: '🀄\uFE0E', color: 'text-red-600' },
-  { type: TileType.DRAGON, value: 'F', label: '發', symbol: '🀅\uFE0E', color: 'text-green-700' },
-  { type: TileType.DRAGON, value: 'P', label: '白', symbol: '🀆\uFE0E', color: 'text-blue-500' },
+  { type: TileType.WIND, value: 'E', label: '東', color: 'text-gray-900' },
+  { type: TileType.WIND, value: 'S', label: '南', color: 'text-gray-900' },
+  { type: TileType.WIND, value: 'W', label: '西', color: 'text-gray-900' },
+  { type: TileType.WIND, value: 'N', label: '北', color: 'text-gray-900' },
+  { type: TileType.DRAGON, value: 'C', label: '中', color: 'text-gray-900' },
+  { type: TileType.DRAGON, value: 'F', label: '發', color: 'text-gray-900' },
+  { type: TileType.DRAGON, value: 'P', label: '白', color: 'text-gray-900' },
 ];
 
 export const LAYOUT_PATTERNS = {

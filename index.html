@@ -4,8 +4,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>麻將對對碰 - 長輩友善版</title>
-    <!-- 引入 Noto Sans TC 用於標題與 UI，Ma Shan Zheng 增加藝術感 -->
+    <title>麻將對對碰 - 經典大字版</title>
+    
+    <!-- PWA 與網站圖示設定 -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#5d0000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%235d0000'/><text x='50' y='72' font-size='65' text-anchor='middle' fill='%23f8e1a1'>🀄</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%235d0000'/><text x='50' y='72' font-size='65' text-anchor='middle' fill='%23f8e1a1'>🀄</text></svg>">
+
     <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -13,26 +21,40 @@
         :root {
             --font-main: 'Noto Sans TC', sans-serif;
             --font-art: 'Ma Shan Zheng', cursive;
+            --color-chinese-red: #8b0000;
+            --color-jade-green: #004d40;
+            --color-wood-dark: #2d1b0d;
         }
         body {
-            background-color: #064e3b; /* 深翠綠色底色 */
+            background-color: var(--color-wood-dark);
             margin: 0;
             padding: 0;
-            overflow: hidden; /* 防止全域滾動，由 App 控制內容 */
+            overflow: hidden;
             font-family: var(--font-main);
             -webkit-tap-highlight-color: transparent;
             user-select: none;
         }
-        .mahjong-bg {
-            background-image: radial-gradient(circle, #065f46 1px, transparent 1px);
-            background-size: 40px 40px;
-            background-color: #064e3b;
+        /* 仿真麻將桌布墊質感 */
+        .mahjong-table {
+            background: radial-gradient(circle, #1a3a34 0%, #0a201c 100%);
+            position: relative;
             min-height: 100vh;
         }
-        /* 優化文字渲染 */
+        .mahjong-table::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            opacity: 0.1;
+            background-image: url("https://www.transparenttextures.com/patterns/carbon-fibre.png");
+            pointer-events: none;
+        }
+        /* 傳統格柵邊框樣式 */
+        .chinese-border {
+            border: 4px solid #b8860b;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
         * {
             -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
             box-sizing: border-box;
         }
     </style>
@@ -46,8 +68,9 @@
   }
 }
 </script>
+<script type="module" src="/index.tsx"></script>
 </head>
-<body class="mahjong-bg">
+<body class="mahjong-table">
     <div id="root"></div>
 </body>
 </html>
