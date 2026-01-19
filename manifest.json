@@ -3,7 +3,7 @@
   "name": "經典麻將對對碰",
   "short_name": "麻將對對碰",
   "description": "專為長輩設計的大字版麻將對對碰遊戲。",
-  "start_url": "/",
+  "start_url": "/mahjong-match/",
   "display": "standalone",
   "background_color": "#2d1b0d",
   "theme_color": "#5d0000",
