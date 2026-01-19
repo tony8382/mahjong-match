@@ -22,6 +22,9 @@ const App: React.FC = () => {
   const [showRules, setShowRules] = useState(false);
 
   const startNewGame = useCallback(async (difficulty: Difficulty) => {
+    // 啟動音樂 (需要使用者點擊事件觸發)
+    audioService.startBGM();
+    
     setGameState(prev => ({ ...prev, status: 'loading', difficulty, tiles: [] }));
     setTimeout(() => {
       const newTiles = createGame(difficulty);
@@ -138,7 +141,6 @@ const App: React.FC = () => {
     <div className="min-h-screen flex flex-col items-center p-2 sm:p-4 bg-emerald-950/20">
       {showRules && <RulesModal onClose={() => setShowRules(false)} />}
 
-      {/* 修改後的 Header：移除 shadow-2xl 以穩定渲染 */}
       <header className="w-full max-w-4xl bg-emerald-900/90 rounded-[2rem] p-4 sm:p-6 mb-4 sm:mb-8 text-white border-b-4 border-emerald-800 shadow-xl">
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-4">
@@ -162,7 +164,6 @@ const App: React.FC = () => {
 
         {gameState.status !== 'selecting' && gameState.status !== 'loading' && (
           <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/10">
-            {/* 改為更穩定的深色實心背景，避免陰影閃爍 */}
             <div className="bg-black/40 rounded-3xl p-3 sm:p-4 text-center border-b-4 border-black/20">
               <p className="text-sm font-bold text-yellow-500 mb-1">得分</p>
               <p className="text-3xl sm:text-5xl font-mono font-black text-white">{gameState.score}</p>
@@ -214,7 +215,10 @@ const App: React.FC = () => {
                   再玩一局
                 </button>
                 <button 
-                  onClick={() => setGameState(prev => ({ ...prev, status: 'selecting' }))} 
+                  onClick={() => {
+                    audioService.stopBGM();
+                    setGameState(prev => ({ ...prev, status: 'selecting' }));
+                  }} 
                   className="py-5 bg-gray-200 text-gray-700 rounded-[2.5rem] text-3xl font-black active:scale-95 transition-all"
                 >
                   回到主選單
@@ -256,7 +260,10 @@ const App: React.FC = () => {
 
       <nav className="fixed bottom-0 left-0 right-0 p-4 sm:p-6 bg-white/95 backdrop-blur-2xl shadow-[0_-20px_60px_rgba(0,0,0,0.4)] z-50 border-t border-gray-200">
         <div className="max-w-4xl mx-auto flex justify-between gap-4">
-          <button onClick={() => setGameState(prev => ({ ...prev, status: 'selecting' }))} className="flex-1 py-5 bg-gray-100 text-gray-700 rounded-3xl font-black flex flex-col items-center justify-center active:scale-95 border-b-8 border-gray-300">
+          <button onClick={() => {
+            audioService.stopBGM();
+            setGameState(prev => ({ ...prev, status: 'selecting' }));
+          }} className="flex-1 py-5 bg-gray-100 text-gray-700 rounded-3xl font-black flex flex-col items-center justify-center active:scale-95 border-b-8 border-gray-300">
             <i className="fas fa-home text-3xl mb-1"></i>
             <span className="text-lg">回選單</span>
           </button>

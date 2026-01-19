@@ -2,6 +2,8 @@
 class AudioService {
   private ctx: AudioContext | null = null;
   private isMuted: boolean = false;
+  private bgmInterval: any = null;
+  private bgmGain: GainNode | null = null;
 
   private init() {
     if (!this.ctx) {
@@ -14,10 +16,20 @@ class AudioService {
 
   setMute(mute: boolean) {
     this.isMuted = mute;
+    if (this.isMuted) {
+      this.stopBGM();
+    } else {
+      this.startBGM();
+    }
   }
 
   toggleMute(): boolean {
     this.isMuted = !this.isMuted;
+    if (this.isMuted) {
+      this.stopBGM();
+    } else {
+      this.startBGM();
+    }
     return this.isMuted;
   }
 
@@ -47,39 +59,61 @@ class AudioService {
   }
 
   private vibrate(pattern: number | number[]) {
-    // 檢查瀏覽器是否支持震動 API
     if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
       try {
         navigator.vibrate(pattern);
-      } catch (e) {
-        // 部分環境可能限制震動 API，優雅跳過
-      }
+      } catch (e) {}
+    }
+  }
+
+  // 柔和的五聲音階旋律 (宮商角徵羽)
+  startBGM() {
+    if (this.isMuted || this.bgmInterval) return;
+    this.init();
+    if (!this.ctx) return;
+
+    const pentatonic = [261.63, 293.66, 329.63, 392.00, 440.00]; // C4, D4, E4, G4, A4
+    let step = 0;
+
+    this.bgmInterval = setInterval(() => {
+      if (this.isMuted || !this.ctx) return;
+      
+      const freq = pentatonic[step % pentatonic.length];
+      // 使用非常柔和的 sine 波，音量極低
+      this.playTone(freq, 'sine', 1.5, 0.02);
+      
+      // 隨機跳動增加旋律感
+      step += Math.floor(Math.random() * 2) + 1;
+    }, 1200);
+  }
+
+  stopBGM() {
+    if (this.bgmInterval) {
+      clearInterval(this.bgmInterval);
+      this.bgmInterval = null;
     }
   }
 
   playSelect() {
-    // 短促的敲擊聲 + 極微弱觸覺點擊
     this.playTone(600, 'sine', 0.1, 0.1);
     this.vibrate(10);
   }
 
   playMatch() {
-    // 愉快的上升音 + 兩次輕快震動
-    setTimeout(() => this.playTone(523.25, 'sine', 0.3, 0.1), 0); // C5
-    setTimeout(() => this.playTone(659.25, 'sine', 0.3, 0.1), 50); // E5
-    setTimeout(() => this.playTone(783.99, 'sine', 0.4, 0.1), 100); // G5
+    setTimeout(() => this.playTone(523.25, 'sine', 0.3, 0.1), 0);
+    setTimeout(() => this.playTone(659.25, 'sine', 0.3, 0.1), 50);
+    setTimeout(() => this.playTone(783.99, 'sine', 0.4, 0.1), 100);
     this.vibrate([30, 30, 30]);
   }
 
   playFail() {
-    // 低沉的錯誤聲 + 明顯的單次震動回饋
     this.playTone(150, 'triangle', 0.2, 0.1);
     this.vibrate(120);
   }
 
   playWin() {
-    // 勝利歡慶音階 + 節奏感慶祝震動
-    const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+    this.stopBGM(); // 獲勝時先停掉背景音樂
+    const notes = [523.25, 659.25, 783.99, 1046.50];
     notes.forEach((freq, i) => {
       setTimeout(() => this.playTone(freq, 'sine', 0.6, 0.1), i * 150);
     });
