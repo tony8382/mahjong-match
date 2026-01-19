@@ -144,7 +144,7 @@ const App: React.FC = () => {
   const currentLayout = LAYOUT_PATTERNS[gameState.difficulty];
 
   return (
-    <div className="h-screen flex flex-col items-center overflow-hidden">
+    <div className="min-h-screen flex flex-col items-center">
       {showRules && <RulesModal onClose={() => setShowRules(false)} />}
 
       {/* 頂部標題列：特大化 */}
@@ -184,7 +184,7 @@ const App: React.FC = () => {
 
       <main 
         ref={containerRef}
-        className="relative flex-1 w-full max-w-7xl p-4 flex items-center justify-center"
+        className="flex-1 w-full max-w-7xl p-4 flex items-center justify-center min-h-0"
       >
         {gameState.status === 'selecting' ? (
           <div className="bg-[#1a0a00]/90 backdrop-blur-md p-10 sm:p-20 border-8 border-[#b8860b] shadow-[0_0_80px_rgba(0,0,0,0.9)] text-center max-w-2xl w-full">
@@ -263,7 +263,7 @@ const App: React.FC = () => {
       </main>
 
       {/* 底部控制列：特大化按鈕 */}
-      <nav className="w-full bg-[#1a0a00] border-t-8 border-[#b8860b] p-4 sm:p-6">
+      <nav className="flex-none w-full bg-[#1a0a00] border-t-8 border-[#b8860b] p-4 sm:p-6">
         <div className="max-w-6xl mx-auto flex justify-between gap-6 sm:gap-10">
           <button onClick={() => { audioService.stopBGM(); setGameState(prev => ({ ...prev, status: 'selecting' })); }} className="flex-1 py-6 sm:py-8 bg-[#3d2b1f] border-2 border-white/10 text-[#f8e1a1] flex flex-col items-center hover:bg-[#4d3b2f] transition-all active:scale-95">
             <i className="fas fa-home text-3xl sm:text-4xl mb-2"></i>
