@@ -16,19 +16,19 @@ const MahjongIcon: React.FC<MahjongIconProps> = ({ type, value, className = "" }
   const isDragon = type === TileType.DRAGON;
 
   const COLORS = {
-    RED: '#b91c1c', // 經典深紅
-    GREEN: '#15803d', // 經典墨綠
-    BLUE: '#1d4ed8', // 經典深藍
-    BLACK: '#1f2937' // 炭黑
+    RED: '#dc2626',   // 鮮艷紅
+    GREEN: '#16a34a', // 鮮艷綠
+    BLUE: '#2563eb',  // 鮮艷藍
+    BLACK: '#000000'  // 純黑（最高對比度）
   };
 
   // 渲染萬子
   if (isChar) {
     const chars: Record<number, string> = { 1: '一', 2: '二', 3: '三', 4: '四', 5: '五', 6: '六', 7: '七', 8: '八', 9: '九' };
     return (
-      <svg viewBox="0 0 100 120" className={className} style={{ width: '85%', height: '85%' }}>
-        <text x="50" y="55" textAnchor="middle" fontSize="60" fontWeight="900" fill={COLORS.BLACK}>{chars[Number(value)]}</text>
-        <text x="50" y="105" textAnchor="middle" fontSize="50" fontWeight="900" fill={COLORS.RED}>萬</text>
+      <svg viewBox="0 0 100 120" className={className} style={{ width: '92%', height: '92%' }}>
+        <text x="50" y="58" textAnchor="middle" fontSize="68" fontWeight="900" fill={COLORS.BLACK}>{chars[Number(value)]}</text>
+        <text x="50" y="108" textAnchor="middle" fontSize="58" fontWeight="900" fill={COLORS.RED}>萬</text>
       </svg>
     );
   }
@@ -48,9 +48,9 @@ const MahjongIcon: React.FC<MahjongIconProps> = ({ type, value, className = "" }
       9: [[25, 25, COLORS.GREEN], [50, 25, COLORS.GREEN], [75, 25, COLORS.GREEN], [25, 60, COLORS.RED], [50, 60, COLORS.RED], [75, 60, COLORS.RED], [25, 95, COLORS.BLUE], [50, 95, COLORS.BLUE], [75, 95, COLORS.BLUE]],
     };
     return (
-      <svg viewBox="0 0 100 120" className={className} style={{ width: '85%', height: '85%' }}>
+      <svg viewBox="0 0 100 120" className={className} style={{ width: '92%', height: '92%' }}>
         {(dotCoords[v] || []).map(([cx, cy, color], i) => (
-          <circle key={i} cx={cx} cy={cy} r={v === 1 ? 28 : 13} fill={color} stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" />
+          <circle key={i} cx={cx} cy={cy} r={v === 1 ? 32 : 15} fill={color} stroke="rgba(255,255,255,0.4)" strokeWidth="2" />
         ))}
       </svg>
     );
@@ -71,9 +71,9 @@ const MahjongIcon: React.FC<MahjongIconProps> = ({ type, value, className = "" }
       9: [[30, 30, COLORS.GREEN], [50, 30, COLORS.GREEN], [70, 30, COLORS.GREEN], [30, 60, COLORS.RED], [50, 60, COLORS.RED], [70, 60, COLORS.RED], [30, 90, COLORS.BLUE], [50, 90, COLORS.BLUE], [70, 90, COLORS.BLUE]],
     };
     return (
-      <svg viewBox="0 0 100 120" className={className} style={{ width: '85%', height: '85%' }}>
+      <svg viewBox="0 0 100 120" className={className} style={{ width: '92%', height: '92%' }}>
         {(bCoords[v] || []).map(([cx, cy, color], i) => (
-          <rect key={i} x={cx - 7} y={cy - 14} width="14" height="28" rx="4" fill={color} stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" />
+          <rect key={i} x={cx - 8} y={cy - 16} width="16" height="32" rx="5" fill={color} stroke="rgba(255,255,255,0.4)" strokeWidth="2" />
         ))}
       </svg>
     );
@@ -92,11 +92,11 @@ const MahjongIcon: React.FC<MahjongIconProps> = ({ type, value, className = "" }
   const item = windDragonMap[String(value)];
   if (item) {
     return (
-      <svg viewBox="0 0 100 120" className={className} style={{ width: '90%', height: '90%' }}>
+      <svg viewBox="0 0 100 120" className={className} style={{ width: '94%', height: '94%' }}>
         {value === 'P' ? (
-           <rect x="20" y="25" width="60" height="70" rx="4" fill="none" stroke={item.color} strokeWidth="10" />
+          <rect x="18" y="22" width="64" height="76" rx="5" fill="none" stroke={item.color} strokeWidth="14" />
         ) : (
-          <text x="50" y="88" textAnchor="middle" fontSize="85" fontWeight="900" fill={item.color}>{item.label}</text>
+          <text x="50" y="92" textAnchor="middle" fontSize="95" fontWeight="900" fill={item.color}>{item.label}</text>
         )}
       </svg>
     );
