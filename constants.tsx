@@ -185,30 +185,25 @@ const castleLayout = (scale: number) => {
   const height = 6 + scale;
   const towerWidth = 2 + Math.floor(scale / 2);
 
-  // 底部城牆
-  for (let x = 0; x < width; x++) {
-    for (let y = 0; y < 2; y++) {
-      pattern.push({ x, y, z: 0 });
-    }
-  }
-
-  // 左塔
+  // 1. 左塔：x 從 0 到 towerWidth-1
   for (let x = 0; x < towerWidth; x++) {
     for (let y = 0; y < height; y++) {
       pattern.push({ x, y, z: 0 });
     }
   }
 
-  // 右塔
+  // 2. 右塔：x 從 width-towerWidth 到 width-1
   for (let x = width - towerWidth; x < width; x++) {
     for (let y = 0; y < height; y++) {
       pattern.push({ x, y, z: 0 });
     }
   }
 
-  // 中間城牆
+  // 3. 中間連通牆：x 夾在塔之間，y 低於塔的高度
+  // 注意：這裡的 y 從 0 開始，x 起點是 towerWidth，因此與塔柱完全【互斥】不重疊
+  const wallMidHeight = Math.floor(height / 2);
   for (let x = towerWidth; x < width - towerWidth; x++) {
-    for (let y = 0; y < Math.floor(height / 2); y++) {
+    for (let y = 0; y < wallMidHeight; y++) {
       pattern.push({ x, y, z: 0 });
     }
   }
@@ -323,5 +318,13 @@ export const generateLayoutForLevel = (level: number) => {
       layout = pyramidLayout(scale);
   }
 
-  return layout;
+  // 重要提醒：這裡過濾的是「同一坐標且同一高度 (x,y,z 均相同)」的重複點。
+  // 不同層 (z 不同) 的「疊加」是被允許且保留的。
+  const uniquePattern = layout.pattern.filter((p, index, self) =>
+    index === self.findIndex((t) => (
+      t.x === p.x && t.y === p.y && t.z === p.z
+    ))
+  );
+
+  return { ...layout, pattern: uniquePattern };
 };

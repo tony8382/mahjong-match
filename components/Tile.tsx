@@ -31,23 +31,23 @@ const Tile: React.FC<TileProps> = ({ tile, isSelected, isHint, isBlocked, onClic
   if (shouldHide) return null;
 
   const { x, y, z, color } = tile;
-  
+
   const vanishStyle = isVanishing ? {
     transform: 'translate(-50%, -50%) rotateY(180deg) scale(0)',
     opacity: 0,
-    zIndex: 2000,
+    zIndex: 5000,
   } : {
-    transform: isSelected ? 'translate(-50%, -60%) scale(1.05)' : 'translate(-50%, -50%)',
-    opacity: isBlocked ? 0.6 : 1,
-    zIndex: Math.floor(z * 10 + (isSelected ? 1000 : 0)),
+    transform: isSelected ? 'translate(-50%, -65%) scale(1.08)' : 'translate(-50%, -50%)',
+    opacity: isBlocked ? 0.7 : 1,
+    zIndex: Math.floor(z * 100 + (isSelected ? 4000 : 0)),
   };
-  
+
   const style: React.CSSProperties = {
     position: 'absolute',
-    left: `calc(50% + ${(x - centerX) * 82 + z * 4}px)`,
-    top: `calc(50% + ${(y - centerY) * 110 - z * 4}px)`,
+    left: `calc(50% + ${(x - centerX) * 96 + z * 10}px)`,
+    top: `calc(50% + ${(y - centerY) * 132 - z * 10}px)`,
     cursor: isBlocked || tile.isMatched ? 'not-allowed' : 'pointer',
-    transition: 'all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)',
+    transition: 'all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)',
     perspective: '1200px',
     willChange: 'transform, opacity',
     ...vanishStyle
@@ -58,31 +58,40 @@ const Tile: React.FC<TileProps> = ({ tile, isSelected, isHint, isBlocked, onClic
       style={style}
       onClick={() => !isBlocked && !tile.isMatched && onClick(tile.id)}
       className={`
-        relative w-[80px] h-[112px] sm:w-[98px] sm:h-[135px]
-        rounded-md border-t border-l border-gray-100
+        relative w-[86px] h-[120px] sm:w-[102px] sm:h-[142px]
+        rounded-md border border-gray-200
         flex items-center justify-center
-        select-none active:scale-95
-        /* 仿實體麻將的側面陰影與厚度 */
+        select-none active:scale-95 transition-shadow
+        /* 厚實的 3D 立體底座與陰影 */
         shadow-[
-          1px_1px_0px_#ddd,
-          2px_2px_0px_#ccc,
-          3px_3px_0px_#bbb,
+          -1px_-1px_3px_rgba(255,255,255,0.8)_inset, 
+          1px_1px_3px_rgba(0,0,0,0.1)_inset,      
+          1px_1px_0px_#eee,                       
+          2px_2px_0px_#ddd,
+          3px_3px_0px_#ccc,
           4px_4px_0px_#aaa,
-          5px_5px_0px_#2d5a27, /* 側面綠色層 */
-          8px_8px_15px_rgba(0,0,0,0.4)
+          5px_5px_0px_#999,
+          6px_6px_0px_#2d5a27,                    
+          7px_7px_0px_#2d5a27,
+          8px_8px_0px_#2d5a27,
+          9px_9px_0px_#2d5a27,
+          10px_10px_0px_#2d5a27,
+          11px_11px_0px_#2d5a27,
+          12px_12px_0px_#1e3d1a,                 
+          18px_18px_25px_rgba(0,0,0,0.5)         
         ]
-        ${isSelected ? 'bg-[#fff9e6] ring-4 ring-yellow-600 ring-offset-2' : 'bg-[#fffef0]'}
-        ${isHint ? 'ring-4 ring-amber-400 animate-pulse' : ''}
-        ${isBlocked ? 'brightness-75' : 'hover:brightness-105'}
+        ${isSelected ? 'bg-[#ffedb3] ring-4 ring-amber-500 ring-offset-2 scale-105' : 'bg-white'}
+        ${isHint ? 'ring-4 ring-yellow-400 animate-pulse bg-yellow-50' : ''}
+        ${isBlocked ? 'brightness-[0.65] grayscale-[0.3]' : 'hover:brightness-105'}
       `}
     >
       {/* 牌面微光與微紋理 */}
       <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-black/10 pointer-events-none rounded-sm"></div>
-      
+
       <div className="w-full h-full flex items-center justify-center p-2">
-        <MahjongIcon 
-          type={tile.type} 
-          value={tile.value} 
+        <MahjongIcon
+          type={tile.type}
+          value={tile.value}
           className={color}
         />
       </div>

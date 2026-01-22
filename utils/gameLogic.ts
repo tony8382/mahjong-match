@@ -11,7 +11,7 @@ import { TILE_DEFINITIONS, generateLayoutForLevel } from '../constants';
 export const isTileBlocked = (tile: MahjongTile, allTiles: MahjongTile[]): boolean => {
   const activeTiles = allTiles.filter(t => !t.isMatched);
 
-  // 特殊獲勝輔助：如果只剩最後兩張且成對，直接解鎖讓長輩點擊
+  // 特殊獲勝輔助：如果最後只剩兩張相同，無視遮擋直接解鎖。
   if (activeTiles.length === 2) {
     const [t1, t2] = activeTiles;
     if (t1.type === t2.type && t1.value === t2.value) {
@@ -21,39 +21,44 @@ export const isTileBlocked = (tile: MahjongTile, allTiles: MahjongTile[]): boole
 
   const otherActiveTiles = activeTiles.filter(t => t.id !== tile.id);
 
-  // 1. 檢查上方 (Z 軸較高) 是否有任何重疊
+  // 1. 【垂直遮擋】檢查上方 (Z 軸更高) 是否有任何重疊
+  // 只要 X, Y 座標距離小於 1.0 (一單元)，就代表上方有牌壓住
   const isBlockedTop = otherActiveTiles.some(t =>
     t.z > tile.z &&
-    Math.abs(t.x - tile.x) < 0.85 &&
-    Math.abs(t.y - tile.y) < 0.85
+    Math.abs(t.x - tile.x) < 1.0 &&
+    Math.abs(t.y - tile.y) < 1.0
   );
   if (isBlockedTop) return true;
 
-  // 2. 檢查左側
+  // 2. 【水平遮擋】經典規則：左右兩邊如果都有牌且同高度，就被擋住
+  // 左右判定的範圍稍微放寬 (0.4 到 1.1 之間都視為鄰近牌)
   const isBlockedLeft = otherActiveTiles.some(t =>
     t.z === tile.z &&
-    t.x <= tile.x - 0.7 && t.x >= tile.x - 1.3 &&
-    Math.abs(t.y - tile.y) < 0.8
+    t.x < tile.x && t.x > tile.x - 1.1 &&
+    Math.abs(t.y - tile.y) < 0.9
   );
 
-  // 3. 檢查右側
   const isBlockedRight = otherActiveTiles.some(t =>
     t.z === tile.z &&
-    t.x >= tile.x + 0.7 && t.x <= tile.x + 1.3 &&
-    Math.abs(t.y - tile.y) < 0.8
+    t.x > tile.x && t.x < tile.x + 1.1 &&
+    Math.abs(t.y - tile.y) < 0.9
   );
 
-  // 左右都被擋住才算 Blocked
+  // 只要有一邊是空的（或是頂層），就能拿
   return isBlockedLeft && isBlockedRight;
 };
 
 export const findHint = (tiles: MahjongTile[]): [string, string] | null => {
-  const activeTiles = tiles.filter(t => !t.isMatched && !isTileBlocked(t, tiles));
+  // 只選出目前「絕對可以點擊」的牌
+  const selectableTiles = tiles
+    .filter(t => !t.isMatched && !isTileBlocked(t, tiles))
+    // 重要：依照 Z 軸從高到低排序，優先提示最上面的牌
+    .sort((a, b) => b.z - a.z);
 
-  for (let i = 0; i < activeTiles.length; i++) {
-    for (let j = i + 1; j < activeTiles.length; j++) {
-      const a = activeTiles[i];
-      const b = activeTiles[j];
+  for (let i = 0; i < selectableTiles.length; i++) {
+    for (let j = i + 1; j < selectableTiles.length; j++) {
+      const a = selectableTiles[i];
+      const b = selectableTiles[j];
       if (a.type === b.type && a.value === b.value) {
         return [a.id, b.id];
       }
@@ -64,8 +69,14 @@ export const findHint = (tiles: MahjongTile[]): [string, string] | null => {
 
 export const createGame = (level: number): MahjongTile[] => {
   const layout = generateLayoutForLevel(level);
-  const pattern = layout.pattern;
-  const totalPositions = pattern.length;
+
+  // 核心防止重複：過濾掉座標完全重疊（(x,y,z)均相同）的點，防止生成幽靈牌。
+  // 注意：這不會刪除非重複層（z 軸不同）的正常疊加。
+  const uniquePattern = layout.pattern.filter((p, index, self) =>
+    index === self.findIndex((t) => t.x === p.x && t.y === p.y && t.z === p.z)
+  );
+
+  const totalPositions = uniquePattern.length;
   const usablePositions = totalPositions % 2 === 0 ? totalPositions : totalPositions - 1;
 
   let attempts = 0;
@@ -84,7 +95,7 @@ export const createGame = (level: number): MahjongTile[] => {
     currentDeck = currentDeck.sort(() => Math.random() - 0.5);
 
     for (let i = 0; i < usablePositions; i++) {
-      const pos = pattern[i];
+      const pos = uniquePattern[i];
       const def = currentDeck[i];
       tiles.push({
         id: `tile-${i}-${Date.now()}-${attempts}`,

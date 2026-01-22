@@ -34,13 +34,13 @@ const App: React.FC = () => {
 
     // 根據關卡動態計算基礎尺寸
     const layout = generateLayoutForLevel(gameState.level);
-    const baseWidth = layout.baseWidth * 100 + 200;
-    const baseHeight = layout.baseHeight * 100 + 200;
+    const baseWidth = layout.baseWidth * 110 + 350; // 增加間距以容納更厚實的 3D 陰影
+    const baseHeight = layout.baseHeight * 140 + 350;
 
     const scaleW = availableWidth / baseWidth;
     const scaleH = availableHeight / baseHeight;
     const finalScale = Math.min(scaleW, scaleH);
-    setBoardScale(Math.max(0.3, Math.min(finalScale, 1.1)));
+    setBoardScale(Math.max(0.25, Math.min(finalScale, 1.2)));
   }, [gameState.level]);
 
   useEffect(() => {
@@ -206,8 +206,8 @@ const App: React.FC = () => {
                   key={level}
                   onClick={() => startNewGame(level)}
                   className={`py-6 sm:py-8 ${level === progress.lastPlayedLevel
-                      ? 'bg-[#b8860b] text-[#1a0a00]'
-                      : 'bg-[#2d1b0d] text-[#f8e1a1]'
+                    ? 'bg-[#b8860b] text-[#1a0a00]'
+                    : 'bg-[#2d1b0d] text-[#f8e1a1]'
                     } border-4 border-[#b8860b] text-3xl sm:text-4xl font-black transition-all hover:scale-105 active:scale-95 shadow-xl`}
                 >
                   {level}
