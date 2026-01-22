@@ -9,8 +9,6 @@ export enum TileType {
   SEASON = 'SEASON'  // 季
 }
 
-export type Difficulty = 'EASY' | 'STANDARD' | 'HARD';
-
 export interface MahjongTile {
   id: string;
   type: TileType;
@@ -31,7 +29,13 @@ export interface GameState {
   moves: number;
   status: 'playing' | 'won' | 'no-moves' | 'loading' | 'selecting';
   history: string[][]; // IDs of matched pairs for undo
-  difficulty: Difficulty;
+  level: number; // 當前關卡
+}
+
+export interface GameProgress {
+  maxLevel: number; // 已解鎖的最高關卡
+  totalScore: number; // 累計總分
+  lastPlayedLevel: number; // 上次玩的關卡
 }
 
 // Added Encouragement interface to resolve import error in geminiService.ts

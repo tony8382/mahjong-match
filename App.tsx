@@ -1,13 +1,15 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { GameState, MahjongTile, Difficulty } from './types';
+import { GameState, MahjongTile, GameProgress } from './types';
 import { createGame, isTileBlocked, findHint, shuffleTilesSolvable } from './utils/gameLogic';
 import { audioService } from './services/audioService';
-import { LAYOUT_PATTERNS } from './constants';
+import { generateLayoutForLevel } from './constants';
+import { loadProgress, unlockNextLevel, updateLastPlayedLevel } from './utils/progressStorage';
 import Tile from './components/Tile';
 import RulesModal from './components/RulesModal';
 
 const App: React.FC = () => {
+  const [progress, setProgress] = useState<GameProgress>(loadProgress());
   const [gameState, setGameState] = useState<GameState>({
     tiles: [],
     selectedId: null,
@@ -15,7 +17,7 @@ const App: React.FC = () => {
     moves: 0,
     status: 'selecting',
     history: [],
-    difficulty: 'STANDARD'
+    level: 1
   });
   const [hintIds, setHintIds] = useState<string[]>([]);
   const [isMuted, setIsMuted] = useState(false);
@@ -29,23 +31,17 @@ const App: React.FC = () => {
     const padding = 40;
     const availableWidth = container.clientWidth - padding;
     const availableHeight = container.clientHeight - padding;
-    
-    let baseWidth = 900;
-    let baseHeight = 750;
-    
-    if (gameState.difficulty === 'HARD') {
-      baseWidth = 1200;
-      baseHeight = 1050;
-    } else if (gameState.difficulty === 'EASY') {
-      baseWidth = 700;
-      baseHeight = 650;
-    }
-    
+
+    // 根據關卡動態計算基礎尺寸
+    const layout = generateLayoutForLevel(gameState.level);
+    const baseWidth = layout.baseWidth * 100 + 200;
+    const baseHeight = layout.baseHeight * 100 + 200;
+
     const scaleW = availableWidth / baseWidth;
     const scaleH = availableHeight / baseHeight;
     const finalScale = Math.min(scaleW, scaleH);
     setBoardScale(Math.max(0.3, Math.min(finalScale, 1.1)));
-  }, [gameState.difficulty]);
+  }, [gameState.level]);
 
   useEffect(() => {
     handleResize();
@@ -54,11 +50,12 @@ const App: React.FC = () => {
     return () => observer.disconnect();
   }, [handleResize, gameState.status]);
 
-  const startNewGame = useCallback(async (difficulty: Difficulty) => {
+  const startNewGame = useCallback(async (level: number) => {
     audioService.startBGM();
-    setGameState(prev => ({ ...prev, status: 'loading', difficulty, tiles: [] }));
+    updateLastPlayedLevel(level);
+    setGameState(prev => ({ ...prev, status: 'loading', level, tiles: [] }));
     setTimeout(() => {
-      const newTiles = createGame(difficulty);
+      const newTiles = createGame(level);
       setGameState({
         tiles: newTiles,
         selectedId: null,
@@ -66,7 +63,7 @@ const App: React.FC = () => {
         moves: 0,
         status: 'playing',
         history: [],
-        difficulty
+        level
       });
       setHintIds([]);
     }, 500);
@@ -78,6 +75,9 @@ const App: React.FC = () => {
       if (gameState.tiles.length > 0 && activeTiles.length === 0) {
         setGameState(prev => ({ ...prev, status: 'won' }));
         audioService.playWin();
+        // 解鎖下一關
+        const newProgress = unlockNextLevel(gameState.level, gameState.score);
+        setProgress(newProgress);
         return;
       }
       if (activeTiles.length === 2) {
@@ -92,7 +92,10 @@ const App: React.FC = () => {
             }));
             audioService.playMatch();
             audioService.playWin();
-          }, 1200); 
+            // 解鎖下一關
+            const newProgress = unlockNextLevel(gameState.level, gameState.score + 100);
+            setProgress(newProgress);
+          }, 1200);
           return;
         }
       }
@@ -101,7 +104,7 @@ const App: React.FC = () => {
         if (hint === null) setGameState(prev => ({ ...prev, status: 'no-moves' }));
       }
     }
-  }, [gameState.tiles, gameState.status]);
+  }, [gameState.tiles, gameState.status, gameState.level, gameState.score]);
 
   const handleTileClick = (id: string) => {
     if (gameState.status !== 'playing') return;
@@ -122,7 +125,7 @@ const App: React.FC = () => {
       if (!firstTile) return { ...prev, selectedId: id };
       if (firstTile.type === clickedTile.type && firstTile.value === clickedTile.value) {
         audioService.playMatch();
-        const newTiles = tiles.map(t => 
+        const newTiles = tiles.map(t =>
           (t.id === id || t.id === selectedId) ? { ...t, isMatched: true } : t
         );
         return {
@@ -141,7 +144,7 @@ const App: React.FC = () => {
     });
   };
 
-  const currentLayout = LAYOUT_PATTERNS[gameState.difficulty];
+  const currentLayout = generateLayoutForLevel(gameState.level);
 
   return (
     <div className="min-h-screen flex flex-col items-center">
@@ -156,81 +159,103 @@ const App: React.FC = () => {
             </div>
             <div>
               <h1 className="text-3xl sm:text-5xl font-black text-[#f8e1a1] tracking-[0.2em]" style={{ fontFamily: 'var(--font-art)' }}>經典麻將對對碰</h1>
+              {gameState.status === 'playing' && (
+                <p className="text-lg sm:text-2xl text-[#b8860b] font-bold mt-1">第 {gameState.level} 關</p>
+              )}
             </div>
           </div>
 
           <div className="flex gap-4 sm:gap-6 items-center">
-             {gameState.status === 'playing' && (
-                <div className="hidden md:flex items-center gap-10 mr-10">
-                   <div className="text-center">
-                      <p className="text-sm sm:text-lg text-[#f8e1a1] font-bold">目前得分</p>
-                      <p className="text-4xl sm:text-5xl text-white font-black">{gameState.score}</p>
-                   </div>
-                   <div className="text-center">
-                      <p className="text-sm sm:text-lg text-green-400 font-bold">剩餘牌數</p>
-                      <p className="text-4xl sm:text-5xl text-white font-black">{gameState.tiles.filter(t => !t.isMatched).length}</p>
-                   </div>
+            {gameState.status === 'playing' && (
+              <div className="hidden md:flex items-center gap-10 mr-10">
+                <div className="text-center">
+                  <p className="text-sm sm:text-lg text-[#f8e1a1] font-bold">目前得分</p>
+                  <p className="text-4xl sm:text-5xl text-white font-black">{gameState.score}</p>
                 </div>
-             )}
-             <button onClick={() => setShowRules(true)} className="w-14 h-14 sm:w-16 sm:h-16 border-4 border-[#b8860b] text-[#f8e1a1] flex items-center justify-center hover:bg-white/10 transition-colors">
-               <i className="fas fa-book-open text-2xl sm:text-3xl"></i>
-             </button>
-             <button onClick={() => { audioService.toggleMute(); setIsMuted(!isMuted); }} className="w-14 h-14 sm:w-16 sm:h-16 border-4 border-[#b8860b] text-[#f8e1a1] flex items-center justify-center hover:bg-white/10 transition-colors">
-               <i className={`fas ${isMuted ? 'fa-volume-mute' : 'fa-volume-up'} text-2xl sm:text-3xl`}></i>
-             </button>
+                <div className="text-center">
+                  <p className="text-sm sm:text-lg text-green-400 font-bold">剩餘牌數</p>
+                  <p className="text-4xl sm:text-5xl text-white font-black">{gameState.tiles.filter(t => !t.isMatched).length}</p>
+                </div>
+              </div>
+            )}
+            <button onClick={() => setShowRules(true)} className="w-14 h-14 sm:w-16 sm:h-16 border-4 border-[#b8860b] text-[#f8e1a1] flex items-center justify-center hover:bg-white/10 transition-colors">
+              <i className="fas fa-book-open text-2xl sm:text-3xl"></i>
+            </button>
+            <button onClick={() => { audioService.toggleMute(); setIsMuted(!isMuted); }} className="w-14 h-14 sm:w-16 sm:h-16 border-4 border-[#b8860b] text-[#f8e1a1] flex items-center justify-center hover:bg-white/10 transition-colors">
+              <i className={`fas ${isMuted ? 'fa-volume-mute' : 'fa-volume-up'} text-2xl sm:text-3xl`}></i>
+            </button>
           </div>
         </div>
       </header>
 
-      <main 
+      <main
         ref={containerRef}
         className="flex-1 w-full max-w-7xl p-4 flex items-center justify-center min-h-0"
       >
         {gameState.status === 'selecting' ? (
-          <div className="bg-[#1a0a00]/90 backdrop-blur-md p-10 sm:p-20 border-8 border-[#b8860b] shadow-[0_0_80px_rgba(0,0,0,0.9)] text-center max-w-2xl w-full">
-            <h2 className="text-5xl sm:text-7xl text-[#f8e1a1] font-black mb-16 tracking-widest" style={{ fontFamily: 'var(--font-art)' }}>請選擇難度</h2>
-            <div className="flex flex-col gap-8 sm:gap-10">
-              <button onClick={() => startNewGame('EASY')} className="py-6 sm:py-10 bg-[#2e4d2a] hover:bg-[#3d6638] text-[#f8e1a1] border-4 border-[#b8860b] text-4xl sm:text-5xl font-black transition-all active:scale-95 shadow-xl">
-                入門 · 簡單
-              </button>
-              <button onClick={() => startNewGame('STANDARD')} className="py-6 sm:py-10 bg-[#1a3a5a] hover:bg-[#254d78] text-[#f8e1a1] border-4 border-[#b8860b] text-4xl sm:text-5xl font-black transition-all active:scale-95 shadow-xl">
-                進階 · 標準
-              </button>
-              <button onClick={() => startNewGame('HARD')} className="py-6 sm:py-10 bg-[#5d1a1a] hover:bg-[#7d2222] text-[#f8e1a1] border-4 border-[#b8860b] text-4xl sm:text-5xl font-black transition-all active:scale-95 shadow-xl">
-                大師 · 挑戰
-              </button>
+          <div className="bg-[#1a0a00]/90 backdrop-blur-md p-10 sm:p-20 border-8 border-[#b8860b] shadow-[0_0_80px_rgba(0,0,0,0.9)] text-center max-w-4xl w-full">
+            <h2 className="text-5xl sm:text-7xl text-[#f8e1a1] font-black mb-8 tracking-widest" style={{ fontFamily: 'var(--font-art)' }}>選擇關卡</h2>
+            <div className="mb-12 text-3xl sm:text-4xl text-white/80">
+              <p>已解鎖關卡：<span className="text-[#b8860b] font-black">{progress.maxLevel}</span></p>
+              <p className="mt-2">累計總分：<span className="text-[#b8860b] font-black">{progress.totalScore}</span></p>
             </div>
+
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-4 sm:gap-6 max-h-[400px] overflow-y-auto p-4">
+              {Array.from({ length: progress.maxLevel }, (_, i) => i + 1).map(level => (
+                <button
+                  key={level}
+                  onClick={() => startNewGame(level)}
+                  className={`py-6 sm:py-8 ${level === progress.lastPlayedLevel
+                      ? 'bg-[#b8860b] text-[#1a0a00]'
+                      : 'bg-[#2d1b0d] text-[#f8e1a1]'
+                    } border-4 border-[#b8860b] text-3xl sm:text-4xl font-black transition-all hover:scale-105 active:scale-95 shadow-xl`}
+                >
+                  {level}
+                </button>
+              ))}
+            </div>
+
+            <button
+              onClick={() => startNewGame(progress.lastPlayedLevel)}
+              className="mt-12 w-full py-8 bg-[#5d0000] hover:bg-[#7d2222] text-[#f8e1a1] border-4 border-[#b8860b] text-4xl sm:text-5xl font-black transition-all active:scale-95 shadow-xl"
+            >
+              繼續遊戲 (第 {progress.lastPlayedLevel} 關)
+            </button>
           </div>
         ) : gameState.status === 'loading' ? (
           <div className="text-center">
-             <div className="w-32 h-32 border-[12px] border-[#b8860b] border-t-transparent animate-spin mb-10"></div>
-             <p className="text-[#f8e1a1] text-4xl font-black tracking-widest animate-pulse">正在擺牌...</p>
+            <div className="w-32 h-32 border-[12px] border-[#b8860b] border-t-transparent animate-spin mb-10"></div>
+            <p className="text-[#f8e1a1] text-4xl font-black tracking-widest animate-pulse">正在擺牌...</p>
           </div>
         ) : gameState.status === 'won' ? (
           <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/95 p-4 animate-fade-in">
             <div className="bg-[#5d0000] border-[12px] border-[#b8860b] p-12 sm:p-24 text-center max-w-3xl shadow-[0_0_120px_rgba(184,134,11,0.6)]">
               <h2 className="text-7xl sm:text-9xl font-black text-[#f8e1a1] mb-10" style={{ fontFamily: 'var(--font-art)' }}>大吉大利</h2>
-              <p className="text-4xl sm:text-5xl text-white/90 mb-16">恭喜過關，頭腦清晰！</p>
+              <p className="text-4xl sm:text-5xl text-white/90 mb-8">恭喜過關，頭腦清晰！</p>
+              <p className="text-3xl sm:text-4xl text-[#b8860b] mb-16">第 {gameState.level} 關完成</p>
+              {gameState.level < progress.maxLevel ? (
+                <p className="text-2xl sm:text-3xl text-green-400 mb-8">已解鎖第 {progress.maxLevel} 關</p>
+              ) : null}
               <div className="flex flex-col sm:flex-row gap-8">
-                <button 
-                  onClick={() => startNewGame(gameState.difficulty)} 
+                <button
+                  onClick={() => startNewGame(gameState.level + 1)}
                   className="flex-1 py-8 bg-[#b8860b] text-[#5d0000] text-4xl sm:text-5xl font-black hover:bg-[#d4a017] transition-colors shadow-2xl"
                 >
-                  再玩一局
+                  下一關
                 </button>
-                <button 
-                  onClick={() => { audioService.stopBGM(); setGameState(prev => ({ ...prev, status: 'selecting' })); }} 
+                <button
+                  onClick={() => { audioService.stopBGM(); setGameState(prev => ({ ...prev, status: 'selecting' })); }}
                   className="flex-1 py-8 bg-white/10 text-white border-4 border-white/20 text-4xl sm:text-5xl font-black hover:bg-white/20 shadow-2xl"
                 >
-                  返回主頁
+                  選擇關卡
                 </button>
               </div>
             </div>
           </div>
         ) : (
-          <div 
-            style={{ 
-              transform: `scale(${boardScale})`, 
+          <div
+            style={{
+              transform: `scale(${boardScale})`,
               transformOrigin: 'center center',
               width: '100%',
               height: '100%',
@@ -267,7 +292,7 @@ const App: React.FC = () => {
         <div className="max-w-6xl mx-auto flex justify-between gap-6 sm:gap-10">
           <button onClick={() => { audioService.stopBGM(); setGameState(prev => ({ ...prev, status: 'selecting' })); }} className="flex-1 py-6 sm:py-8 bg-[#3d2b1f] border-2 border-white/10 text-[#f8e1a1] flex flex-col items-center hover:bg-[#4d3b2f] transition-all active:scale-95">
             <i className="fas fa-home text-3xl sm:text-4xl mb-2"></i>
-            <span className="text-lg sm:text-2xl font-bold">主選單</span>
+            <span className="text-lg sm:text-2xl font-bold">選關</span>
           </button>
           <button onClick={() => { audioService.playSelect(); setGameState(prev => ({ ...prev, tiles: shuffleTilesSolvable(prev.tiles), selectedId: null, status: 'playing' })); setHintIds([]); }} disabled={gameState.status !== 'playing'} className="flex-1 py-6 sm:py-8 bg-[#3d2b1f] border-2 border-white/10 text-[#f8e1a1] flex flex-col items-center hover:bg-[#4d3b2f] transition-all disabled:opacity-20 active:scale-95">
             <i className="fas fa-sync-alt text-3xl sm:text-4xl mb-2"></i>
@@ -277,7 +302,7 @@ const App: React.FC = () => {
             <i className="fas fa-search text-3xl sm:text-4xl mb-2"></i>
             <span className="text-lg sm:text-2xl font-bold">提示</span>
           </button>
-          <button onClick={() => { 
+          <button onClick={() => {
             if (gameState.history.length === 0) return;
             audioService.playSelect();
             const lastMatch = gameState.history[gameState.history.length - 1];
