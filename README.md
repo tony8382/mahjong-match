@@ -4,7 +4,7 @@
 這是一款專為長輩設計的「麻將對對碰（Mahjong Solitaire）」遊戲。考量到老年用戶的需求，我們在視覺設計、互動操作以及聽覺回饋上進行了深度優化，提供流暢且無負擔的益智體驗。
 
 🎉 **試玩看看吧**
-立即體驗這款趣味十足的婚禮互動遊戲！👉 [立即試玩](https://tony8382.github.io/mahjong-match/)  
+立即體驗這款趣味十足的互動遊戲！👉 [立即試玩](https://tony8382.github.io/mahjong-match/)  
 ![APP screenshot](footage/gameboard.png)
 
 ## 🌟 遊戲特色
